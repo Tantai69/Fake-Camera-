@@ -1,3 +1,4 @@
+
 name: Build Fake Camera APK
 
 on:
@@ -19,27 +20,17 @@ jobs:
           mkdir -p project
           unzip -o *.zip -d project
 
-      - name: Find Android project
-        run: |
-          echo "Searching for Gradle project..."
-          find project -name gradlew -type f -print
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.2
 
       - name: Build APK
         run: |
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
+          echo "Finding Android project..."
+          find project -name build.gradle -print
 
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found in the ZIP project."
-            echo "Project contents:"
-            find project -maxdepth 3 -type f | head -100
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          gradle -p project assembleDebug --no-daemon
 
       - name: Find APK
         run: |
